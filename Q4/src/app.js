@@ -5,9 +5,27 @@
 
 function loadSession() {
     const raw = sessionStorage.getItem("session");
-    const session = JSON.parse(raw);          // No try/catch
-    return session;                            // No field validation
-}
+   if (!raw) return null;
+
+try {
+    const session = JSON.parse(raw);
+
+    if (
+        !session ||
+        typeof session.userId !== "string" || session.userId.trim() === "" ||
+        typeof session.role !== "string" || session.role.trim() === "" ||
+        typeof session.displayName !== "string" || session.displayName.trim() === ""
+    ) {
+        return null;
+    }
+
+    return session;
+
+} catch {
+    return null;
+ } 
+ }
+
 
 
 //  Q4.A  Status Message Rendering
@@ -18,9 +36,10 @@ function loadSession() {
 
 
 function renderStatusMessage(containerElement, message) {
-    containerElement.innerHTML = "<p>" + message + "</p>";   // UNSAFE
+const p = document.createElement("p");
+p.textContent = message;
+containerElement.appendChild(p);
 }
-
 
 
 //  Q4.B  Search Query Sanitization
@@ -36,16 +55,28 @@ function sanitizeSearchQuery(input) {
     //   - Trim leading/trailing whitespace before processing
     //   - Max 40 characters
     //   - Return null if the result is empty after sanitization
-    return input;   // UNSAFE – returns raw input unchanged
-}
+   if (typeof input !== "string") return null;
 
+input = input.trim();
+
+if (input.length === 0) return null;
+if (input.length > 40) return null;
+
+if (!/^[A-Za-z0-9 _-]+$/.test(input)) return null;
+
+return input;
+ }
 function performSearch(query) {
     const sanitized = sanitizeSearchQuery(query);
     const label = document.getElementById("search-label");
-    label.innerHTML = "Showing results for: " + sanitized;  // UNSAFE
+if (sanitized === null) {
+    label.textContent = "Showing results for: invalid search";
+    return;
 }
 
+label.textContent = "Showing results for: " + sanitized;
 
+}
 
 //  Application Bootstrap
 //  Runs when the page finishes loading.
